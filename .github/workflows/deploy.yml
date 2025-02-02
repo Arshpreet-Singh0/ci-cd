@@ -16,8 +16,8 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_ed25519  # Load private key from GitHub secrets
-          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_rsa  # Load private RSA key from GitHub secrets
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
 
       - name: Print SSH Private Key (For Debugging)
@@ -26,14 +26,14 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "echo 'SSH connection successful'"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "echo 'SSH connection successful'"
 
       - name: Deploy Next.js to EC2
         uses: appleboy/scp-action@master
         with:
           host: 23.20.116.3
           username: ubuntu
-          key: ${{ secrets.AWS_SSH_KEY }}  # Load private key from GitHub secrets
+          key: ${{ secrets.AWS_SSH_KEY }}  # Load RSA private key from GitHub secrets
           source: "."  
           target: "/ci-cd"
 
@@ -42,7 +42,7 @@ jobs:
         with:
           host: 23.20.116.3
           username: ubuntu
-          key: ${{ secrets.AWS_SSH_KEY }}  # Load private key from GitHub secrets
+          key: ${{ secrets.AWS_SSH_KEY }}  # Load RSA private key from GitHub secrets
           script: |
             cd /ci-cd
             npm install
