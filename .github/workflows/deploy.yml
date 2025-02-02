@@ -3,47 +3,39 @@ name: Deploy Next.js to AWS EC2
 on:
   push:
     branches:
-      - main
+      - main  # Runs on every push to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H your-ec2-ip >> ~/.ssh/known_hosts
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Next.js app
-        run: npm run build
-
-      - name: Transfer files to EC2
+      - name: Deploy Next.js to EC2
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
+          host: 23.20.116.3
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/${{ secrets.AWS_USERNAME }}/next-app"
+          target: "/cd-cd"
 
-      - name: Deploy on EC2
+      - name: Restart Next.js with PM2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AWS_HOST }}
-          username: ${{ secrets.AWS_USERNAME }}
-          key: ${{ secrets.AWS_SSH_KEY }}
+          host: your-ec2-ip
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.AWS_USERNAME }}/next-app
+            cd /ci-cd
             npm install
             npm run build
-            pm2 delete next-app || true
-            pm2 start npm --name "next-app" -- start
-            pm2 save
-            pm2 startup
+            pm2 restart next-app || pm2 start npm --name "next-app" -- start
