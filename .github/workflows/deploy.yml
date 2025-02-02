@@ -20,6 +20,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
 
+           # Add the passphrase if needed
+            echo "${{ secrets.SSH_KEY_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+
       - name: Print SSH Private Key (For Debugging)
         run: |
           echo "${{ secrets.AWS_SSH_KEY }}"  # Print private key to logs (use for testing only)
