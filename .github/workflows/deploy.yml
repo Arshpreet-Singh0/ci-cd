@@ -29,14 +29,15 @@ jobs:
       - name: Pull Latest Code on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd || (mkdir /ci-cd && cd /ci-cd) && 
-            git pull origin main
+            cd /ci-cd || (mkdir /ci-cd && cd /ci-cd) && 
+            git pull origin main 
           "
 
       - name: Install Dependencies & Build on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd && 
+            source ~/.bashrc && 
+            cd /ci-cd && 
             npm install && 
             npm run build
           "
@@ -44,6 +45,6 @@ jobs:
       - name: Restart Next.js with PM2 on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd && 
+            cd /ci-cd && 
             pm2 restart next-app || pm2 start npm --name 'next-app' -- start
           "
