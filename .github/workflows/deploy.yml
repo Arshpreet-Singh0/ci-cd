@@ -50,12 +50,7 @@ jobs:
             # Install dependencies and build the project
             cd ci-cd && 
             npm install && 
-            npm run build
-          "
-
-      - name: Restart Next.js with PM2 on EC2
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd && 
+            npm run build &&
+            npm i -g pm2 &&
             pm2 restart next-app || pm2 start npm --name 'next-app' -- start
           "
