@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:  # Allow manual triggering of workflow
 
 jobs:
   deploy:
@@ -29,14 +30,20 @@ jobs:
       - name: Pull Latest Code on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd || (mkdir ci-cd && cd ci-cd) && 
-            git pull origin main 
+            cd ci-cd || (mkdir /ci-cd && cd /ci-cd) && 
+            git pull origin main
+          "
+
+      - name: Install Latest Node.js on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
+            curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash - && 
+            sudo apt-get install -y nodejs
           "
 
       - name: Install Dependencies & Build on EC2
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            source ~/.bashrc && 
             cd ci-cd && 
             npm install && 
             npm run build
