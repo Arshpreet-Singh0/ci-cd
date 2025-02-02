@@ -34,28 +34,26 @@ jobs:
             git pull origin main
           "
 
-      - name: Install nvm and Latest Node.js
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            # Install nvm if not installed
-            if ! command -v nvm &> /dev/null; then
-              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-            fi
-            # Source nvm and install latest stable Node.js
-            export NVM_DIR=\"\${HOME}/.nvm\"
-            [ -s \"\${NVM_DIR}/nvm.sh\" ] && \. \"\${NVM_DIR}/nvm.sh\"
-            nvm install stable
-            nvm use stable
-            node -v
-          "
+      - name: Install nvm, Latest Node.js, Install Dependencies & Build on EC2
+  run: |
+    ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
+      # Install nvm if not installed
+      if ! command -v nvm &> /dev/null; then
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+      fi
+      # Source nvm and install latest stable Node.js
+      export NVM_DIR=\"\${HOME}/.nvm\"
+      [ -s \"\${NVM_DIR}/nvm.sh\" ] && \. \"\${NVM_DIR}/nvm.sh\"
+      nvm install stable
+      nvm use stable
+      node -v
+      # Install dependencies and build the project
+      cd ci-cd && 
+      npm install && 
+      npm run build
+    "
 
-      - name: Install Dependencies & Build on EC2
-        run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "
-            cd ci-cd && 
-            npm install && 
-            npm run build
-          "
+       
 
       - name: Restart Next.js with PM2 on EC2
         run: |
