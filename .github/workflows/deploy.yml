@@ -13,31 +13,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup SSH Key and Add to SSH Agent
+      - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets._SSH_KEYAWS }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_ed25519  # Load private key from GitHub secrets
           chmod 600 ~/.ssh/id_ed25519
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519
           ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
-          ssh -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "echo 'SSH connection successful'"
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "echo 'SSH connection successful'"
 
       - name: Deploy Next.js to EC2
         uses: appleboy/scp-action@master
         with:
           host: 23.20.116.3
           username: ubuntu
-          key: ${{ secrets.AWS_SSH_KEY }}
+          key: ${{ secrets.AWS_SSH_KEY }}  # Load private key from GitHub secrets
           source: "."  
           target: "/ci-cd"
 
@@ -46,7 +38,7 @@ jobs:
         with:
           host: 23.20.116.3
           username: ubuntu
-          key: ${{ secrets.AWS_SSH_KEY }}
+          key: ${{ secrets.AWS_SSH_KEY }}  # Load private key from GitHub secrets
           script: |
             cd /ci-cd
             npm install
