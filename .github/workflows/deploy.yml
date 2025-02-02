@@ -22,9 +22,15 @@ jobs:
           ssh-add ~/.ssh/id_ed25519
           ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
 
-      - name: Test SSH Connection (Debug)
+      - name: Test SSH connection
         run: |
-          ssh -v -i ~/.ssh/id_ed25519 ubuntu@23.20.116.3 "echo 'SSH connection successful'"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=no ubuntu@23.20.116.3 "echo 'SSH connection successful'"
 
       - name: Deploy Next.js to EC2
         uses: appleboy/scp-action@master
