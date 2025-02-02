@@ -15,7 +15,7 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets._SSH_KEYAWS }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
 
