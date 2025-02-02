@@ -3,7 +3,7 @@ name: Deploy Next.js to AWS EC2
 on:
   push:
     branches:
-      - main  # Runs on every push to the main branch
+      - main
 
 jobs:
   deploy:
@@ -15,9 +15,12 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H your-ec2-ip >> ~/.ssh/known_hosts
+          ssh-keyscan -H 23.20.116.3 >> ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -i ~/.ssh/id_ed25519 ubuntu@23.20.116.3 "echo 'SSH connection successful'"
 
       - name: Deploy Next.js to EC2
         uses: appleboy/scp-action@master
@@ -25,13 +28,13 @@ jobs:
           host: 23.20.116.3
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "."
-          target: "/cd-cd"
+          source: "."  
+          target: "/ci-cd"
 
       - name: Restart Next.js with PM2
         uses: appleboy/ssh-action@master
         with:
-          host: your-ec2-ip
+          host: 23.20.116.3
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
